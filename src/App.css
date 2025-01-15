@@ -1,0 +1,14 @@
+/* index.css or App.css */
+body {
+    font-family: 'PT Serif', serif;
+    /* Set PT Serif as the default font */
+    margin: 0;
+    /* Optional: reset default margin */
+    padding: 0;
+    /* Optional: reset default padding */
+    background-color: #213555;
+    /* Optional: set a default background color */
+    color: #333;
+    /* Optional: set a default text color */
+}
+

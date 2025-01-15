@@ -1,0 +1,53 @@
+.app-container{
+    width: 100%;
+    min-height: 100vh;
+    padding: 10px 0px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.form-container{
+    /* background-color: #3E5879; */
+    backdrop-filter: blur(10px);
+    padding: 40px 20px;
+    box-shadow: 0px 0px 3px;
+    border-radius: 5px;
+}
+.form-container input{
+    background-color: transparent;
+    color: white;
+    border: none;
+    outline: none;
+    box-shadow: 0px 0px 2px;
+    border-radius: 5px;
+    padding: 6px;
+}
+.form-container input:focus{
+    background-color: transparent;
+}
+.form-container button{
+    background-color: #213555;
+    color: white;
+    border: none;
+    outline: none;
+    box-shadow: 0px 0px 2px;
+    border-radius: 5px;
+    padding: 8px;
+}
+
+.form-container input::placeholder {
+    color: white; 
+  }
+ /* Add this CSS to your CSS file */
+.question-container {
+    transition: transform 0.5s ease-in-out; /* Smooth transition */
+  }
+  
+  .slide-in {
+    transform: translateX(0); /* Slide in from the right */
+  }
+  
+  .slide-out {
+    transform: translateX(100%); /* Slide out to the right */
+  }
+  
