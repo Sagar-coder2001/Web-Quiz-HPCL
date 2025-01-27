@@ -9,8 +9,6 @@ const Login = ({ type = 'none' }) => {
   const [loading, setLoading] = useState(false);
   const [alertVisible, setAlertVisible] = useState(false); // State to manage alert visibility
   const [alertMessage, setAlertMessage] = useState(''); // State to manage alert visibility
-
-
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {

@@ -1,29 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import DataNotFound from '../DataNotFound';
 import Loading from '../Loading';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
-import { Card, LinearProgress } from '@mui/material';
+import { useLocation, useNavigate } from 'react-router-dom'; // Import useNavigate
+import { Card, LinearProgress, Button } from '@mui/material';
 import './Register.css'
 import Navbar from './Navbar';
+import bg from '../../assets/01.gif'
+import confused from '../../assets/confused.gif'
 
 
 // Custom Radio Button Component
 const RadioButton = ({ name, value, id, checked, onChange, label, isSelected, isCorrect, isWrong }) => {
-
   const getBackgroundColor = () => {
     if (isSelected && isWrong) {
-      return 'bg-red-500 text-white'; // Wrong answer
+      return 'bg-red-500'; // Wrong answer
     }
     if (isCorrect) {
-      return 'bg-green-500 text-white'; // Correct answer
+      return 'bg-green-500'; // Correct answer
     }
-    return 'bg-gray-300 text-gray-800'; // Default
+    return 'shadow m-2'; // Default
   };
 
   return (
     <div className="flex items-center mb-4">
       <input
-        type="radio"
+        type="checkbox"
         name={name}
         value={value}
         id={id}
@@ -48,7 +49,7 @@ const QuizGame = () => {
 
   const [questions, setQuestion] = useState([]);
 
-  const [LeaderBoardData, setLeaderBoardData] = useState([]);
+  // const [LeaderBoardData, setLeaderBoardData] = useState([]);
 
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [score, setScore] = useState(0);
@@ -62,19 +63,20 @@ const QuizGame = () => {
   const [totalTime, setTotalTime] = useState(0); // State for total time
   const [loading, setLoading] = useState(true);
   const [datafound, setDatafound] = useState(false);
-  const [categrotyName, setCategrotyName] = useState('');
+  const [Typename, setTypeName] = useState('');
   const [animationState, setAnimationState] = useState('');
 
 
+  const location = useLocation();
+  const username = location.state?.firstname;
 
   const handleOptionChange = (option) => {
     if (!optionSelected) {
       const updatedAnswers = [...userAnswers];
-      updatedAnswers[currentQuestionIndex] = option; // Update the answer
+      updatedAnswers[currentQuestionIndex] = option; 
 
-      // Check if the selected option is correct
       if (option === questions[currentQuestionIndex].answer) {
-        setScore(prevScore => prevScore + 1); // Increment score if correct
+        setScore(prevScore => prevScore + 1); 
       }
 
       setSelectedOption(option);
@@ -96,7 +98,7 @@ const QuizGame = () => {
         } else {
           handleSubmit(updatedAnswers); // Submit when it's the last question
         }
-      }, 1500); // Delay for showing answer feedback
+      }, 1000); // Delay for showing answer feedback
     }
   };
 
@@ -105,7 +107,7 @@ const QuizGame = () => {
       try {
         const formData = new FormData();
         formData.append('GID', localStorage.getItem('gid'));
-        const response = await fetch('http://192.168.1.50/WebQuiz/play.php?do=get', {
+        const response = await fetch('https://ca81-115-96-216-155.ngrok-free.app/Vedanta/API/getQnA.php', {
           method: 'POST',
           body: formData,
         });
@@ -113,17 +115,38 @@ const QuizGame = () => {
         if (!response.ok) {
           throw new Error('Network response was not ok');
         }
-
         const result = await response.json();
-        console.log(result);
 
-        if (result.Status == true) {
-          setQuestion(result.Questions);
+        
+        //   result.map((item) => {
+        //     console.log(item)
+        //  })
+
+        console.log(result.Data[0].Question)
+
+        const questions = result.Data;
+
+        const mappedQuestions = questions.map((question, index) => ({
+          id: index,
+          questionText: question.Question,
+          options: question.Option, 
+          type: question.Type, 
+          answer: question.answer || null,
+        }));
+  
+        console.log(mappedQuestions); // Log the transformed questions array
+
+        mappedQuestions.forEach((question, index) => {
+          console.log(`Question ${index + 1}: ${question.questionText}`);
+        });
+        
+        // if (result.Status == true) {
+          setQuestion(mappedQuestions);
           setDatafound(true);
-          setCategrotyName(result.Category)
-        } else {
-          setDatafound(false)
-        }
+          setTypeName();
+        // } else {
+        //   setDatafound(false)
+        // }
       } catch (err) {
         console.error(err.message);
       } finally {
@@ -160,9 +183,9 @@ const QuizGame = () => {
       formData.append('score', finalScore);
       formData.append('timetaken', duration);
 
-      const response = await fetch('http://localhost/WebQuiz/play.php?do=updateScore', {
-      method: 'POST',
-      body: formData,
+      const response = await fetch('https://ca81-115-96-216-155.ngrok-free.app/Vedanta/API/getQnA.php', {
+        method: 'POST',
+        body: formData,
       });
 
       if (!response.ok) {
@@ -183,15 +206,35 @@ const QuizGame = () => {
       setLoading(false);
     }
   };
-
+  
+  const previousQuestion = () => {
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(currentQuestionIndex - 1);
+      setSelectedOption(userAnswers[currentQuestionIndex - 1]);
+      setOptionSelected(false);
+      setShowAnswer(false);
+      setTimeRemaining(15);
+    }
+  };
+  const nextquestion = () => {
+    console.log('Clicked');
+    if (currentQuestionIndex < questions.length - 1) {
+      const updatedIndex = currentQuestionIndex + 1;
+      setCurrentQuestionIndex(updatedIndex);
+      setSelectedOption(userAnswers[updatedIndex]);
+      setOptionSelected(true); 
+      setShowAnswer(false); 
+      setTimeRemaining(15); 
+    }
+  };
+  
   useEffect(() => {
     if (timeRemaining > 0 && !quizCompleted) {
       const timer = setInterval(() => {
         setTimeRemaining((prev) => prev - 1);
-      }, 1000);
+      }, 100000);
       return () => clearInterval(timer); // Clean up the timer on component unmount
     } else if (timeRemaining === 0) {
-      // If time runs out, submit the current answer as empty
       if (!optionSelected) {
         handleOptionChange(null); // Automatically record as null if no option was selected
       }
@@ -204,99 +247,85 @@ const QuizGame = () => {
     return <div className='h-screen bg-gray-300'><DataNotFound /></div>
   }
 
-  const progress = (timeRemaining / 15) * 100; 
+  const progress = (timeRemaining / 15) * 100;
 
   return (
     <div>
       <Navbar />
       <div className="app-container">
-        <div className="container-sm">
-          <Card sx={{ padding: '30px 15px', backgroundColor: '#3E5879', color: 'dark'}}>
+        <div className="container-fluid">
+          <Card sx={{ padding: '30px 10px', boxShadow: '0px 0px 4px', borderRadius: '10px' }}>
             <div className="row d-flex justify-content-center align-items-center">
-              <div className="p-8 flex-grow">
-                <h1 className="text-4xl font-bold mb-4 text-white text-center">Quiz Game</h1>
-                <div className="progress-container">
-                    <LinearProgress
+              <div className="col-lg-6">
+                <div className="card-container p-0 p-lg-5 mb-5">
+                  <div className="p-3">
+                    <h1 className="text-4xl font-bold mb-4 text-center">Quiz Game</h1>
+                    <hr />
+                    <div className="userinfo mt-2">
+                      <h3 className='mb-3 text-center' style={{ fontSize: '20px' }}>Welcome - {username} Let's Start The Quiz</h3>
+                      <div className="img-container" style={{ width: '100%' }}>
+                        <img src={confused} alt="Quiz Test" className="w-[180px] md:w-[300px]" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="col-lg-6">
+                <div className="progress-container" style={{ marginBottom: '20px' }}>
+                  <LinearProgress
                     variant="determinate"
                     value={progress} // Set the progress to the calculated percentage
-                    sx={{ width: '400px', maxWidth: '100%', margin: '0px auto', paddingBottom:'20px', borderRadius:'5px' }}
+                    sx={{ width: '400px', maxWidth: '100%', margin: '0px auto', paddingBottom: '10px', borderRadius: '20px' }}
                   />
                 </div>
-                {quizCompleted ? (
-                  <div className="p-6 rounded-lg shadow-lg w-full max-w-md bg-gray-100 text-center mx-auto">
-                    <h2 className="text-2xl font-semibold mb-4">Quiz Results</h2>
-                    <p className="text-lg mb-4">
-                      You scored <strong>{score}</strong> out of {questions.length}.<br />
-                      Total time taken: <strong>{totalTime} seconds</strong>
-                    </p>
-                    <p className="mb-4">Thank you for playing!</p>
+                <div className={`question-container ${animationState}`}>
+                  <div className="flex items-center w-full max-w-md justify-between mb-4 mx-auto">
+                    <span className="text-xl flex-1" style={{ fontSize: '25px' }}>Question {currentQuestionIndex + 1}/{questions.length}</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                    </svg>
+                    <h2 className="text-2xl font-semibold flex items-center mr-4">{timeRemaining}</h2>
                   </div>
-                ) : (
-                  <>
-                  <div className={`question-container ${animationState}`}>
-                    <div className="flex items-center w-full max-w-md justify-between mb-4 mx-auto">
-                      <span className="text-xl flex-1 text-white">Question {currentQuestionIndex + 1}/{questions.length}</span>
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                      </svg>
-                      <h2 className="text-2xl font-semibold flex items-center mr-4 text-white">{timeRemaining}</h2>
+                  <div className="form-container">
+                    <div>
+                      <p className="text-2xl font-semibold text-center" style={{ fontSize: '22px' }}> <span className='text-white'>{currentQuestionIndex + 1}.</span>{questions[currentQuestionIndex].options.map((option, index) => {option.questionText})}</p>
+                      <hr className='mt-4' />
                     </div>
-                    <Card sx={{ backgroundColor: '#3E5879', color: 'dark', width:'500px', maxWidth:'100%', margin:'0px auto', padding:'30px', boxShadow:'0px 0px 4px' }}>
-                      <div>
-                        <p className="text-2xl font-semibold text-center">{questions[currentQuestionIndex].question}</p>
-                      </div>
-                      <div className="p-6 mt-5 rounded-lg shadow-lg w-full max-w-md mx-auto">
-                        <div className="mb-4">
+                    <div className="p-6 mt-5 rounded-lg shadow-lg w-full mx-auto">
+                      <div className="mb-4">
                         {questions[currentQuestionIndex].options.map((option, index) => {
                           const isCorrect = option === questions[currentQuestionIndex].answer;
                           const isWrong = option === selectedOption && !isCorrect;
-                            return (
-                              <RadioButton
-                              key={index}
-                              name={`question-${currentQuestionIndex}`}
-                              value={option}
-                              id={`option-${currentQuestionIndex}-${index}`}
-                              checked={selectedOption === option}
-                              onChange={() => handleOptionChange(option)}
-                              label={option}
-                              isSelected={selectedOption === option}
-                              isCorrect={isCorrect && showAnswer}
-                              isWrong={isWrong}
-                            />
-                            );
-                          })}
-                        </div>
-                      </div>
-                    </Card>
-                    </div>
-                  </>
-                )}
+                          return (
+                            <>
+                              <div>
+                                <RadioButton
+                                  key={index}
+                                  name={`question-${currentQuestionIndex}`}
+                                  value={option}
+                                  id={`option-${currentQuestionIndex}-${index}`}
+                                  checked={selectedOption === option}
+                                  onChange={() => handleOptionChange(option)}
+                                  label={option}
+                                  isSelected={selectedOption === option}
+                                  isCorrect={isCorrect && showAnswer}
+                                  isWrong={isWrong}
+                                />
+                              </div>
+                            </>
+                          );
+                        })}
+                        <Button variant="contained" color="default" onClick={previousQuestion}>
+                          Prev
+                        </Button>
 
-                {quizCompleted && (
-                  <div className="p-6 mt-6 rounded-lg shadow-lg w-full max-w-md bg-white text-center mx-auto">
-                    <h3 className="text-xl font-semibold mb-4">Leaderboard</h3>
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full border-collapse border border-gray-300">
-                        <thead>
-                          <tr>
-                            <th className="border border-gray-300 px-4 py-2">Rank</th>
-                            <th className="border border-gray-300 px-4 py-2">Name</th>
-                            <th className="border border-gray-300 px-4 py-2">Score</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {LeaderBoardData.map((player, index) => (
-                            <tr key={index}>
-                              <td className="border border-gray-300 px-4 py-2 text-center">{index + 1}</td>
-                              <td className="border border-gray-300 px-4 py-2 text-center">{player.name}</td>
-                              <td className="border border-gray-300 px-4 py-2 text-center">{player.score}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                        <Button variant="contained" color="default" onClick={nextquestion}>
+                          Next
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                )}
+                </div>
               </div>
             </div>
           </Card>

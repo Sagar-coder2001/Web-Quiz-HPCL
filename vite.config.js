@@ -5,6 +5,7 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   server: {
     host: true,  // This makes the server accessible from the network
+    port: 5000,
   },
   plugins: [react()],
   // base: '/WebQuiz/', // Uncomment if you need a custom base path

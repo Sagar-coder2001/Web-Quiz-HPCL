@@ -1,14 +1,12 @@
-/* index.css or App.css */
+/* Set up the body */
 body {
-    font-family: 'PT Serif', serif;
-    /* Set PT Serif as the default font */
     margin: 0;
-    /* Optional: reset default margin */
     padding: 0;
-    /* Optional: reset default padding */
-    background-color: #213555;
-    /* Optional: set a default background color */
-    color: #333;
-    /* Optional: set a default text color */
+    box-sizing: border-box;
+    width: 100%;
+    background-image: linear-gradient(to right, rgba( 0, 82, 152, 0.5),rgba(113, 179, 47, 0.5)),url('../src/assets/Background.gif');
+    background-repeat: no-repeat;
+    object-fit: cover;
+    background-position: center;
+    background-size: cover;
 }
-

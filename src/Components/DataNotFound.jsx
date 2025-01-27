@@ -1,15 +1,31 @@
 import React from 'react';
+import Navbar from './Player/Navbar';
+import { Card } from '@mui/material';
 
 const DataNotFound = ({ darkMode }) => {
   return (
-    <div className={`flex items-center justify-center h-96 ${darkMode ? 'bg-gray-900' : 'bg-gray-300'}`}>
-      <div className="text-center">
-        <h1 className={`text-6xl font-bold ${darkMode ? 'text-red-400' : 'text-red-600'}`}>No Data</h1>
-        <p className={`mt-4 text-xl ${darkMode ? 'text-white' : 'text-black'}`}>Data Not Found</p>
-        <p className={`mt-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>We couldn't find any data matching your criteria.</p>
-        
+    <>
+    <Navbar />
+    <div className="app-container">
+      <div className="container-fluid" style={{marginTop:'80px', marginBottom:'20px'}}>
+        <div className='p-2 p-lg-5' sx={{
+          // backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), url(${bg})`,
+          // backgroundSize: 'cover',
+          // backgroundPosition: 'center',
+          // backgroundRepeat: 'no-repeat',
+          backgroundColor:'transparent',
+          boxShadow: '0px 0px 4px',
+           borderRadius: '10px',
+        }}>
+      <div className="text-center" style={{fontSize:'30px'}}>
+        <h1 className='text-danger'>No Data</h1>
+        <p className='text-danger'>Data Not Found</p>
+        <p className='' style={{fontSize:'18px'}}>We couldn't find any data matching your criteria.</p>
       </div>
-    </div>
+      </div>
+      </div>
+      </div>
+    </>
   );
 };
 
