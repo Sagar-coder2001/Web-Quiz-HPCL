@@ -7,7 +7,7 @@ import './App.css';
 import UnderConstruction from './Components/UnderConstruction.jsx';
 import RegisterPage from './Components/Player/RegisterPage.jsx';
 // import QuizGame from './Components/Player/QuizGame.jsx';
-import Startpage from './Components/Player/Startpage.jsx';
+// import Startpage from './Components/Player/Startpage.jsx';
 import Score from './Components/Player/Score.jsx';
 import QuizGame1 from './Components/Player/QuizGame1.jsx';
 
@@ -20,7 +20,7 @@ function App() {
         <Route path="*" element={<NotFound />} />
         <Route path="/" element={<RegisterPage />} />
         <Route path="/play" element={<QuizGame1 />} />
-        <Route path="/Startpage" element={<Startpage />} />
+        {/* <Route path="/Startpage" element={<Startpage />} /> */}
         <Route path="/Score" element={<Score />} />
       </Routes>
     </HashRouter>

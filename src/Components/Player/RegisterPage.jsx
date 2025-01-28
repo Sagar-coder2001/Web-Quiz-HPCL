@@ -9,9 +9,7 @@ import PhoneIcon from '@mui/icons-material/Phone';
 import { Card } from '@mui/material';
 import quizimg from '../../assets/userquiz.gif'
 import Navbar from './Navbar';
-import bg from '../../assets/01.gif'
 import TypewriterComponent from 'typewriter-effect';
-import PersonAddIcon from '@mui/icons-material/PersonAdd';
 
 
 const RegisterPage = () => {
@@ -29,6 +27,7 @@ const RegisterPage = () => {
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState('');
   const [gid, setGid] = useState(null);
+
 
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
@@ -60,10 +59,6 @@ const RegisterPage = () => {
       newErrors.email = 'Please enter a valid email address.';
     }
 
-    if (!formData.orgName) {
-      newErrors.orgName = 'Organisation name is required.';
-    }
-
     return newErrors;
   };
   const handleSubmit = async (e) => {
@@ -83,7 +78,7 @@ const RegisterPage = () => {
         formData1.append('orgName', formData.orgName);
         formData1.append('GID', gid); // Include GID if needed
 
-        const response = await fetch('http://192.168.1.27/Vedanta/API/registerUser.php', {
+        const response = await fetch('http://192.168.1.25/Vedanta/API/registerUser.php', {
           method: 'POST',
           body: formData1,
         });
@@ -101,7 +96,7 @@ const RegisterPage = () => {
           // localStorage.setItem('email', formData.email);
           localStorage.setItem('gid', gid);
           localStorage.setItem('UID', result.UID);
-          navigate('/play', { state: { name: formData.Name } });
+          navigate('/play', { state: { name: formData.Name , uid : result.UID} });
         }
         else {
           console.log(result);
@@ -171,6 +166,7 @@ const RegisterPage = () => {
                     <div className='col-span-6 text-center' style={{ fontSize: '30px', marginBottom: '30px' }}>
                       Registration
                     </div>
+                  
                     <hr className='mb-4' />
                     <div className="col-span-6">
                       <label htmlFor="name" className="block mt-2"> <PersonIcon sx={{ marginBottom: '3px' }} /><strong className='ml-2'>Username</strong></label>

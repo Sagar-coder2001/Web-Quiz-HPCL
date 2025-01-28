@@ -1,39 +1,57 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Card } from '@mui/material';
 import Navbar from './Navbar';
-import { Bar, Pie } from 'react-chartjs-2';
+import { Bar } from 'react-chartjs-2';
 import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS, Title, Tooltip, Legend, ArcElement, CategoryScale, LinearScale } from 'chart.js';
 import thank from '../../assets/thank.gif';
 import './Register.css';
 
+
+
 // Register necessary chart.js components
 ChartJS.register(Title, Tooltip, Legend, ArcElement, CategoryScale, LinearScale);
 
+
+
 const Score = () => {
   const location = useLocation();
-  const { score, totalTime, totalQuestions } = location.state || {};
+  const { score, totalTime, totalQuestions, } = location.state || {};
+  const [finaldata , setFinalData] = useState([])
 
-  console.log(score , totalQuestions , totalTime);
+  // console.log(score , totalQuestions , totalTime,);
+
+  useEffect(() => {
+    const fetchScoreData = async () => {
+      try {
+        const response = await fetch(`http://192.168.1.25/Vedanta/API/getScore.php?UID=${2}`, {
+          method: 'GET', 
+        });
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        const data = await response.json(); 
+        console.log(data); 
+        setFinalData(data.Result);
+        if (result.Status === true) {
+          console.log(result); 
+        } else {
+
+        }
+      } catch (err) {
+        console.error('Error fetching score:', err.message);
+      }
+    };
+
+    fetchScoreData(); // Call the async function to fetch the data
+
+  }, []);
+
 
   const totalScore = Object.values(score).reduce((acc, value) => acc + value, 0);
   console.log(totalScore);
 
-  // Prepare the data for the pie chart
-  const pieData = {
-    labels: Object.keys(score),
-    datasets: [
-      {
-        data: Object.values(score),
-        backgroundColor: ['#ff9999', '#66b3ff', '#99ff99', '#ffcc99', '#c2c2f0'],
-        hoverBackgroundColor: ['#ff6666', '#3399ff', '#66ff66', '#ff9966', '#b3b3ff'],
-        borderWidth: 1,
-      },
-    ],
-  };
-
-  // Prepare data for the line chart (showing detailed results over time or categories)
   const lineData = {
     labels: Object.keys(score),
     datasets: [
@@ -71,27 +89,23 @@ const Score = () => {
               <div className="row d-flex justify-content-center align-items-center">
 
                 <div className="col-xl-6">
+
+                  <div className="progressdata">
+                    {/* {
+                      finaldata.map((item) => {
+                        <>
+                        <input type="range" value={item} />
+                        </>
+                      })
+                    } */}
+                  </div>
+
                   {/* Line Chart */}
                   <div className="line-chart-container chart" style={{ marginTop: '30px', padding:'10px' }}>
                     <Bar data={lineData} options={{ responsive: true, plugins: { legend: { position: 'top' } } }} />
                   </div>
                 </div>
-
-                <div className="col-xl-6">
-                  {/* Pie Chart */}
-                  <div className="pie-chart-container chart" style={{ marginTop: '30px', padding:'10px' }}>
-                    <Pie data={pieData} options={{ responsive: true, plugins: { legend: { position: 'top' } } }} style={{width:'100%', height:'100%'}} />
-                  </div>
-                </div>
-
               </div>
-              {/* Average Percentage Display */}
-              {/* <div style={{ marginTop: '20px' }}>
-                <h3>Average Percentage: {averagePercentage.toFixed(2)}%</h3>
-              </div> */}
-
-
-
               <div className="result-summary" style={{ marginTop: '30px' }}>
                 <h3>Overall Score: {totalScore}/{totalQuestions}</h3>
                 <p>Time Taken: {totalTime} seconds</p>

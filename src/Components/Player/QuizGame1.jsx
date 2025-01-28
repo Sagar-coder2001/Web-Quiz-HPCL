@@ -7,13 +7,22 @@ import './Register.css'
 import Navbar from './Navbar';
 import bg from '../../assets/_.png'
 import confused from '../../assets/Confused Man.gif'
-import optionbg from '../../assets/sky blue.png'
+import optiona from '../../assets/a.png'
+import TypewriterComponent from 'typewriter-effect';
 // Custom Radio Button Component
 // Custom Radio Button Component
 const RadioButton = ({ name, value, id, checked, onChange, label }) => {
+
   return (
     <>
-      <div className="radio-option" style={{ display: 'flex', flex: '1 1 45%', marginBottom: '15px' }}>
+      <div className="radio-option"
+        style={
+          {
+            display: 'flex',
+            flex: '1 2 45%',
+            marginBottom: '15px',
+          }
+        } onClick={() => onChange({ target: { value } })}>
         <input
           type="radio"
           name={name}
@@ -23,25 +32,42 @@ const RadioButton = ({ name, value, id, checked, onChange, label }) => {
           checked={checked}
           onChange={onChange}
         />
-        <div style={{ position: 'relative' }}>
-          <img src={optionbg} alt="" />
+        <div style={{
+          position: 'relative',
+          border: '1px solid',
+          width: '100%',
+          //  height: '200px',
+          overflow: 'hidden'
+        }} >
 
-          <label
+          <img src={optiona} alt="" style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+          }} />
+
+          <p
             htmlFor={id}
             // className="cursor-pointer p-4 bg-transparent rounded-lg transition duration-300 shadow-md"
             style={{
               position: 'absolute',
-              top: '0px',
-              left: '40px'
+              top: '5px',
+              left: '50px',
+              fontWeight: 'bold',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              fontSize: '15px'
             }}
           >
             {label}
-          </label>
+          </p>
         </div>
       </div>
     </>
   );
 };
+
+// here i display 4 option and add the background image to the option but in 4 option add same image i want to use different image to 4 option 
 
 const QuizGame1 = () => {
   const navigate = useNavigate();
@@ -49,7 +75,7 @@ const QuizGame1 = () => {
   const [score, setScore] = useState(0);
   const [selectedOption, setSelectedOption] = useState(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [timeRemaining, setTimeRemaining] = useState(15); // 15 seconds for each question
+  // const [timeRemaining, setTimeRemaining] = useState(15);
   const [loading, setLoading] = useState(true);
   const [dataFound, setDataFound] = useState(false);
   const [animationState, setAnimationState] = useState('');
@@ -57,9 +83,13 @@ const QuizGame1 = () => {
   const [quizcomplete, setQuizComplete] = useState(false);
   const [startTime, setStartTime] = useState(Date.now());
   const [totalTime, setTotalTime] = useState(0);
+  const [answers, setAnswers] = useState({});
+
+
+
   const location = useLocation();
   const username = location.state?.name;
-  console.log(username)
+  const uid = location.state?.uid;
 
   // Fetch data from API
   useEffect(() => {
@@ -67,7 +97,7 @@ const QuizGame1 = () => {
       try {
         const formData = new FormData();
         formData.append('GID', localStorage.getItem('gid'));
-        const response = await fetch('http://192.168.1.27/Vedanta/API/getQnA.php', {
+        const response = await fetch('http://192.168.1.25/Vedanta/API/getQnA.php', {
           method: 'POST',
           body: formData,
         });
@@ -89,46 +119,53 @@ const QuizGame1 = () => {
   }, []);
 
   const handleOptionChange = (selectedValue) => {
-    if (!selectedValue) {
-      // Handle the case where no option is selected, e.g., no points for this question
+    if (selectedValue === null) {
       console.log("No option selected");
       setCurrentQuestionIndex(currentQuestionIndex + 1);
-      setTimeRemaining(15);
       return;
     }
-    console.log(selectedValue);
-    setSelectedOption(selectedValue);
-    // Get the current question
-    const currentQuestion = questions[currentQuestionIndex];
-    // Find the selected option and its associated points
-    const selectedOption = currentQuestion.Option.find((option) => option[1] === selectedValue);
-    const pointsToAdd = selectedOption ? selectedOption[1] : 0; // Points from the selected option
-    // Check if the selected option is valid (you might have a logic for correctness based on selected value)
-    if (selectedValue) {
-      // Update score for the selected category based on question type
-      setScore((prevScore) => {
-        const updatedScore = { ...prevScore };
-        const type = currentQuestion.Type; // Example: "energy", "food", etc.
-        console.log(type)
-        // Initialize the type score if not yet
-        if (!updatedScore[type]) {
-          updatedScore[type] = 0;
-        }
-        // Add the score for this question's type based on the points associated with the selected option
-        updatedScore[type] += pointsToAdd;
-        console.log(updatedScore); // Log the updated score for debugging purposes
-        setUpdatedScore(updatedScore);
-        return updatedScore;
-      });
-    }
-    setAnimationState('fade-out');
 
-    // Go to the next question after a delay
+    const currentQuestion = questions[currentQuestionIndex];
+    const selectedOption = currentQuestion.Option.find((option) => option[1] === selectedValue);
+    const pointsToAdd = selectedOption ? selectedOption[1] : 0;
+
+    // Store the selected answer for the current question
+    setAnswers((prevAnswers) => {
+      const newAnswers = { ...prevAnswers, [currentQuestionIndex]: selectedValue };
+      return newAnswers;
+    });
+
+    // Update score based on current answer (if changed)
+    setScore((prevScore) => {
+      const updatedScore = { ...prevScore };
+      const type = currentQuestion.Type;
+      const previousSelectedValue = answers[currentQuestionIndex];
+
+      // Remove the previous points (if any) before adding the new points
+      if (previousSelectedValue) {
+        const previousSelectedOption = currentQuestion.Option.find((option) => option[1] === previousSelectedValue);
+        const previousPoints = previousSelectedOption ? previousSelectedOption[1] : 0;
+        updatedScore[type] -= previousPoints;
+      }
+
+      // Add the new points for the selected option
+      if (!updatedScore[type]) {
+        updatedScore[type] = 0;
+      }
+      updatedScore[type] += pointsToAdd;
+
+      console.log(updatedScore);  // Log the updated score for debugging purposes
+      setUpdatedScore(updatedScore);
+      return updatedScore;
+    });
+
+    // Proceed with the question animation and navigation
+    setAnimationState('fade-out');
     setTimeout(() => {
       setAnimationState('fade-in');
       if (currentQuestionIndex < questions.length - 1) {
         setCurrentQuestionIndex(currentQuestionIndex + 1);
-        setSelectedOption(null); // Reset the selected option
+        setSelectedOption(null);
       } else {
         handleSubmit(); // If it's the last question, submit the score
       }
@@ -136,18 +173,19 @@ const QuizGame1 = () => {
   };
 
 
-  useEffect(() => {
-    if (timeRemaining > 0 && !quizcomplete) {
-      const timer = setInterval(() => {
-        setTimeRemaining((prev) => prev - 1);
-      }, 100000);
-      return () => clearInterval(timer); // Clean up the timer on component unmount
-    } else if (timeRemaining === 0) {
-      if (!selectedOption) {
-        handleOptionChange(null); // Automatically record as null if no option was selected
-      }
-    }
-  }, [timeRemaining, quizcomplete]);
+
+  // useEffect(() => {
+  //   if (timeRemaining > 0 && !quizcomplete) {
+  //     const timer = setInterval(() => {
+  //       setTimeRemaining((prev) => prev - 1);
+  //     }, 100000);
+  //     return () => clearInterval(timer); 
+  //   } else if (timeRemaining === 0) {
+  //     if (!selectedOption) {
+  //       handleOptionChange(null);
+  //     }
+  //   }
+  // }, [timeRemaining, quizcomplete]);
 
 
   const handleSubmit = async () => {
@@ -159,39 +197,40 @@ const QuizGame1 = () => {
     // alert(`Quiz submitted! Your score is ${finalScore} out of ${questions.length}. Total time: ${duration} seconds.`);
     // setQuizCompleted(true);
     navigate('/Score', {
-      state: { score: score, totalTime: duration, totalQuestions: questions.length }
+      state: {score: score, totalTime: duration, totalQuestions: questions.length }
     });
-    // try {
-    //   setLoading(true);
-    //   const formData = new FormData();
-    //   formData.append('GID', localStorage.getItem('gid'));
-    //   formData.append('contact', localStorage.getItem('contact'));
-    //   formData.append('email', localStorage.getItem('email'));
-    //   formData.append('score', finalScore);
-    //   formData.append('timetaken', duration);
+    try {
+      setLoading(true);
+      const formData = new FormData();
 
-    //   const response = await fetch('https://ca81-115-96-216-155.ngrok-free.app/Vedanta/API/getQnA.php', {
-    //     method: 'POST',
-    //     body: formData,
-    //   });
+      formData.append('Energy', score.Energy);
+      formData.append('Transport', score.Transport);
+      formData.append('Waste', score.Waste);
+      formData.append('Food', score.Food);
+      formData.append('Lifestyle', score.Lifestyle);
+      formData.append('UID', uid);
 
-    //   if (!response.ok) {
-    //     throw new Error('Network response was not ok');
-    //   }
+      const response = await fetch('http://192.168.1.25/Vedanta/API/updateScore.php', {
+        method: 'POST',
+        body: formData,
+      });
 
-    //   const result = await response.json();
-    //   console.log(result);
-    //   if (result.Status == true) {
-    //     setLeaderBoardData(result.LeaderBoard);
-    //     console.log(result);
-    //   } else {
-    //     navigate('/');
-    //   }
-    // } catch (err) {
-    //   console.error(err.message);
-    // } finally {
-    //   setLoading(false);
-    // }
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      const result = await response.json();
+      console.log(result);
+      if (result.Status == true) {
+        console.log(result);
+      } else {
+        // navigate('/');
+      }
+    } catch (err) {
+      console.error(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (loading) return <Loading darkMode={false} />;
@@ -201,7 +240,8 @@ const QuizGame1 = () => {
   const currentQuestion = questions[currentQuestionIndex];
   const options = currentQuestion?.Option || [];
 
-  const progress = (timeRemaining / 15) * 100;
+  const totalQuestion = 15;
+  const progress = (currentQuestionIndex / totalQuestion) * 100;
 
   return (
     <div>
@@ -213,27 +253,37 @@ const QuizGame1 = () => {
               <div className="col-xl-6">
                 <div className="card-container p-0 p-lg-5 mb-5">
                   <div className="p-3">
-                    <h1 className="text-4xl font-bold mb-4 text-center">Carbon Footprint Quiz</h1>
+                    <h1 className="text-4xl font-bold mb-4 text-center" style={{ textShadow: '2px 2px 2px white' }}>Carbon Footprint Quiz</h1>
                     <hr />
                     <div className="userinfo d-flex justify-content-around align-items-center">
                       <div className="img-container" style={{ width: '100%' }}>
                         <img src={confused} alt="Quiz Test" className="w-[180px] md:w-[300px]" />
                       </div>
-                      <div style={{ fontSize: '20px', width: '100%' }}>
-                        <h3 style={{ fontSize: '30px' }}>Welcome {username}</h3>
-                        <div>
+                      <div style={{ width: '100%', }}>
+                        <h4 style={{ fontSize: '25px', fontWeight: 'bold' }}>
 
+                          <TypewriterComponent
+                            options={{
+                              strings: [`Welcome ${username}`],
+                              autoStart: true,
+                              loop: true,
+                              delay: 50,
+                            }}
+                          />
+
+                        </h4>
+                        <div>
                           <h3 style={{
-                            marginTop: '20px'
+                            marginTop: '20px',
+                            fontSize: '20px',
+                            fontWeight: 'bold',
                           }}>Category - {currentQuestion.Type}
-                          <p>
+                          </h3>
+                          <p style={{ marginTop: '20px', }}>
                             {
                               currentQuestion.Suggestion[0]
                             }
-                            </p>
-
-                            
-                          </h3>
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -241,30 +291,47 @@ const QuizGame1 = () => {
                 </div>
               </div>
               <div className="col-xl-6">
-                <div className="progress-container" style={{ marginBottom: '20px' }}>
+                <div className="progress-container" style={{ marginBottom: '20px', position:'relative' }}>
                   <LinearProgress
                     variant="determinate"
                     value={progress}
-                    sx={{ width: '400px', maxWidth: '100%', margin: '0px auto', paddingBottom: '10px', borderRadius: '20px' }}
+                    sx={{
+                      width: '400px',
+                      maxWidth: '100%',
+                      margin: '0px auto',
+                      paddingBottom: '10px',
+                      borderRadius: '30px',
+                      height: '50px',
+                    }}
                   />
+                  <h2 style={{
+                    position:'absolute',
+                    top:'50%',
+                    left:'50%',
+                    transform:'translate(-50%,-50%)'
+                  }}> <strong> {progress.toFixed(2)} {progress < 100 ? 'Keep It Up' : ''}</strong></h2>
+                  
                 </div>
-                <div className={`question-container ${animationState}`}>
+                <div className={`question-container`}>
                   <div
                     className="flex items-center w-full max-w-md justify-between mb-4 mx-auto"
                   >
-                    <span className="text-xl flex-1" style={{ fontSize: '25px' }}>Question {currentQuestionIndex + 1}/{questions.length}</span>
-                    <h2 className="text-2xl font-semibold flex items-center mr-4">{timeRemaining < 10 ? `0${timeRemaining}` : timeRemaining}</h2>
+                    <span className="text-center flex-1" style={{ fontSize: '25px' }}>Question {currentQuestionIndex + 1}/{questions.length}</span>
+                    {/* <h2 className="text-2xl font-semibold flex items-center mr-4">{timeRemaining < 10 ? `0${timeRemaining}` : timeRemaining}</h2> */}
                   </div>
-                  <div className={`form-container ${animationState}`}>
+                  <div className={`form-container`}>
                     <div style={{ position: 'relative', width: '100%' }}>
                       {/* Image */}
                       <img
                         src={bg}
                         alt="Background"
                         style={{
-                          width: '100%',
+                          width: '80%',
                           height: 'auto',
                           objectFit: 'cover',
+                          margin: '0px auto',
+                          backgroundColor: '#71b32f',
+                          borderRadius: '6px'
                         }}
                       />
 
@@ -277,7 +344,7 @@ const QuizGame1 = () => {
                           wordWrap: 'break-word',
                           textAlign: 'center',
                           position: 'absolute',
-                          top: '20%',
+                          top: '10%',
                           left: '50%',
                           transform: 'translateX(-50%)',
                           maxWidth: '90%',
@@ -295,8 +362,9 @@ const QuizGame1 = () => {
                     <div>
                     </div>
 
-                    <div className="p-6 mt-5 rounded-lg shadow-lg w-full mx-auto border-1 row" style={{ display: 'flex', flexWrap: 'wrap', gap: '20px' }}>
-                      <span className='text-center'><strong>Options</strong></span>
+                    <div className={`p-6 mt-5 rounded-lg shadow-lg w-full mx-auto border-1 row animate ${animationState}`} style={{ display: 'flex', flexWrap: 'wrap', gap: '20px' }}>
+                      <span className='text-center' style={{ fontSize: '30px' }}><strong>Options</strong></span>
+                      <hr />
                       {options.length > 0 ? (
                         options.map((option, index) => (
                           <RadioButton
@@ -317,9 +385,15 @@ const QuizGame1 = () => {
                       <Button
                         variant="contained"
                         color="default"
-                        onClick={() => setCurrentQuestionIndex(currentQuestionIndex - 1)}
-                        disabled={currentQuestionIndex === 0} // Disable "Prev" button if on first question
+                        onClick={() => {
+                          // Update the selected option when navigating back
+                          const previousAnswer = answers[currentQuestionIndex - 1];
+                          setSelectedOption(previousAnswer);
+                          setCurrentQuestionIndex(currentQuestionIndex - 1);
+                        }}
+                        disabled={currentQuestionIndex === 0} // Disable "Prev" button if on the first question
                         className='w-40'
+                        style={{ marginRight: '20px' }}
                       >
                         Prev
                       </Button>
