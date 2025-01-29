@@ -7,11 +7,10 @@ import './Register.css'
 import Navbar from './Navbar';
 import bg from '../../assets/_.png'
 import confused from '../../assets/Confused Man.gif'
-import optiona from '../../assets/a.png'
 import TypewriterComponent from 'typewriter-effect';
-// Custom Radio Button Component
-// Custom Radio Button Component
-const RadioButton = ({ name, value, id, checked, onChange, label }) => {
+import btnsound from '../../assets/btnclick.wav'
+
+const RadioButton = ({ name, value, id, checked, onChange, label}) => {
 
   return (
     <>
@@ -32,32 +31,16 @@ const RadioButton = ({ name, value, id, checked, onChange, label }) => {
           checked={checked}
           onChange={onChange}
         />
-        <div style={{
-          position: 'relative',
-          border: '1px solid',
-          width: '100%',
-          //  height: '200px',
-          overflow: 'hidden'
-        }} >
-
-          <img src={optiona} alt="" style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-          }} />
-
+        <div className='outerbox'>
+          <div className='options'>
+            {id === 'option-0' ? 'A' :
+              id === 'option-1' ? 'B' :
+                id === 'option-2' ? 'C' :
+                  id === 'option-3' ? 'D' :
+                    ''}
+          </div>
           <p
             htmlFor={id}
-            // className="cursor-pointer p-4 bg-transparent rounded-lg transition duration-300 shadow-md"
-            style={{
-              position: 'absolute',
-              top: '5px',
-              left: '50px',
-              fontWeight: 'bold',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              fontSize: '15px'
-            }}
           >
             {label}
           </p>
@@ -119,6 +102,9 @@ const QuizGame1 = () => {
   }, []);
 
   const handleOptionChange = (selectedValue) => {
+    const sound = new Audio(btnsound);
+    sound.play();
+
     if (selectedValue === null) {
       console.log("No option selected");
       setCurrentQuestionIndex(currentQuestionIndex + 1);
@@ -196,13 +182,10 @@ const QuizGame1 = () => {
 
     // alert(`Quiz submitted! Your score is ${finalScore} out of ${questions.length}. Total time: ${duration} seconds.`);
     // setQuizCompleted(true);
-    navigate('/Score', {
-      state: {score: score, totalTime: duration, totalQuestions: questions.length }
-    });
+    navigate('/Score');
     try {
       setLoading(true);
       const formData = new FormData();
-
       formData.append('Energy', score.Energy);
       formData.append('Transport', score.Transport);
       formData.append('Waste', score.Waste);
@@ -224,7 +207,7 @@ const QuizGame1 = () => {
       if (result.Status == true) {
         console.log(result);
       } else {
-        // navigate('/');
+        setLoading(true);
       }
     } catch (err) {
       console.error(err.message);
@@ -247,13 +230,13 @@ const QuizGame1 = () => {
     <div>
       <Navbar />
       <div className="app-container">
-        <div className="container-fluid" style={{ marginTop: '80px', marginBottom: '20px' }}>
+        <div className="container-fluid" style={{ marginTop: '70px', marginBottom: '20px' }}>
           <Card sx={{ padding: '30px 10px', boxShadow: '0px 0px 4px', borderRadius: '10px', backgroundColor: 'transparent' }}>
             <div className="row d-flex justify-content-center align-items-center">
               <div className="col-xl-6">
-                <div className="card-container p-0 p-lg-5 mb-5">
+                <div className="card-container p-0 mb-2">
                   <div className="p-3">
-                    <h1 className="text-4xl font-bold mb-4 text-center" style={{ textShadow: '2px 2px 2px white' }}>Carbon Footprint Quiz</h1>
+                    <h1 className="text-4xl font-bold mb-4 text-center" style={{ textShadow: '2px 2px 2px white' }}>CARBON FOOTPRINT QUIZ</h1>
                     <hr />
                     <div className="userinfo d-flex justify-content-around align-items-center">
                       <div className="img-container" style={{ width: '100%' }}>
@@ -291,7 +274,7 @@ const QuizGame1 = () => {
                 </div>
               </div>
               <div className="col-xl-6">
-                <div className="progress-container" style={{ marginBottom: '20px', position:'relative' }}>
+                <div className="progress-container" style={{ marginBottom: '20px', position: 'relative' }}>
                   <LinearProgress
                     variant="determinate"
                     value={progress}
@@ -301,16 +284,17 @@ const QuizGame1 = () => {
                       margin: '0px auto',
                       paddingBottom: '10px',
                       borderRadius: '30px',
-                      height: '50px',
+                      height: '40px',
+                      backgroundColor:'white',
                     }}
                   />
                   <h2 style={{
-                    position:'absolute',
-                    top:'50%',
-                    left:'50%',
-                    transform:'translate(-50%,-50%)'
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%,-50%)'
                   }}> <strong> {progress.toFixed(2)} {progress < 100 ? 'Keep It Up' : ''}</strong></h2>
-                  
+
                 </div>
                 <div className={`question-container`}>
                   <div
@@ -320,43 +304,16 @@ const QuizGame1 = () => {
                     {/* <h2 className="text-2xl font-semibold flex items-center mr-4">{timeRemaining < 10 ? `0${timeRemaining}` : timeRemaining}</h2> */}
                   </div>
                   <div className={`form-container`}>
-                    <div style={{ position: 'relative', width: '100%' }}>
-                      {/* Image */}
-                      <img
-                        src={bg}
-                        alt="Background"
-                        style={{
-                          width: '80%',
-                          height: 'auto',
-                          objectFit: 'cover',
-                          margin: '0px auto',
-                          backgroundColor: '#71b32f',
-                          borderRadius: '6px'
-                        }}
-                      />
-
-                      {/* Question Text */}
+                    <div className='outerbox' style={{margin:'0px auto'}}>
                       <p
                         className="text-2xl font-semibold text-center"
-                        style={{
-                          fontSize: '22px',
-                          color: 'black',
-                          wordWrap: 'break-word',
-                          textAlign: 'center',
-                          position: 'absolute',
-                          top: '10%',
-                          left: '50%',
-                          transform: 'translateX(-50%)',
-                          maxWidth: '90%',
-                          padding: '0 10px',
-                        }}
                       >
-                        <span>{currentQuestionIndex + 1}.</span>
+                        <span className='mr-3'>{currentQuestionIndex + 1}.</span>
                         {currentQuestion?.Question || 'Loading Question...'}
                       </p>
 
                       {/* Optional: Horizontal Line */}
-                      <hr className="mt-4" />
+                    
                     </div>
 
                     <div>
@@ -364,14 +321,14 @@ const QuizGame1 = () => {
 
                     <div className={`p-6 mt-5 rounded-lg shadow-lg w-full mx-auto border-1 row animate ${animationState}`} style={{ display: 'flex', flexWrap: 'wrap', gap: '20px' }}>
                       <span className='text-center' style={{ fontSize: '30px' }}><strong>Options</strong></span>
-                      <hr />
+                      <hr className='mb-5' />
                       {options.length > 0 ? (
                         options.map((option, index) => (
                           <RadioButton
                             key={index}
                             name={`question-${currentQuestionIndex}`}
                             value={option[1]}
-                            id={`option-${currentQuestionIndex}-${index}`}
+                            id={`option-${index}`}
                             checked={selectedOption === option[1]}
                             onChange={() => handleOptionChange(option[1])}
                             label={option[0]}
@@ -400,7 +357,6 @@ const QuizGame1 = () => {
                       <Button
                         className='w-40'
                         variant="contained"
-                        color="default"
                         onClick={() => setCurrentQuestionIndex(currentQuestionIndex + 1)}
                         disabled={currentQuestionIndex === questions.length - 1} // Disable "Next" button if on last question
                       >

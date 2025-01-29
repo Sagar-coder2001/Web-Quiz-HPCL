@@ -1,75 +1,64 @@
 import React, { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
-import { Card } from '@mui/material';
+import { Card, CircularProgress, LinearProgress } from '@mui/material';
 import Navbar from './Navbar';
-import { Bar } from 'react-chartjs-2';
-import { Line } from 'react-chartjs-2';
-import { Chart as ChartJS, Title, Tooltip, Legend, ArcElement, CategoryScale, LinearScale } from 'chart.js';
-import thank from '../../assets/thank.gif';
 import './Register.css';
-
-
-
-// Register necessary chart.js components
-ChartJS.register(Title, Tooltip, Legend, ArcElement, CategoryScale, LinearScale);
-
-
+import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
+import 'react-circular-progressbar/dist/styles.css';
 
 const Score = () => {
-  const location = useLocation();
-  const { score, totalTime, totalQuestions, } = location.state || {};
-  const [finaldata , setFinalData] = useState([])
-
-  // console.log(score , totalQuestions , totalTime,);
+  const [finaldata, setFinalData] = useState({});
+  const [highestScore, setHighestScore] = useState(null);
+  const [highestScoreCategory, setHighestScoreCategory] = useState(null);
+  const [maxScore, setMaxScore] = useState(0);  // To find the max score across all categories
+  const [average, setAverage] = useState();
 
   useEffect(() => {
     const fetchScoreData = async () => {
       try {
         const response = await fetch(`http://192.168.1.25/Vedanta/API/getScore.php?UID=${2}`, {
-          method: 'GET', 
+          method: 'GET',
         });
         if (!response.ok) {
           throw new Error('Network response was not ok');
         }
-        const data = await response.json(); 
-        console.log(data); 
-        setFinalData(data.Result);
-        if (result.Status === true) {
-          console.log(result); 
-        } else {
+        const data = await response.json();
+        console.log(data);
+        setFinalData(data.Result); // Assuming data.Result is an object now
 
+        // Assuming data.Result is an object where keys are categories and values are the scores
+        if (data.Result) {
+          let highest = { score: -Infinity, category: null }; // Initialize with a very low score
+
+          // Find the highest score and set max score for scaling
+          for (const category in data.Result) {
+            const score = data.Result[category];
+
+            // Update highest score and category
+            if (score > highest.score) {
+              highest = { score, category };
+            }
+          }
+          setHighestScore(highest.score);
+          setHighestScoreCategory(highest.category); // Set the category that had the highest score
+          setMaxScore(9); // Set the max score for scaling progress bars
         }
       } catch (err) {
         console.error('Error fetching score:', err.message);
       }
     };
-
     fetchScoreData(); // Call the async function to fetch the data
-
   }, []);
 
+  const total = 25;
+  const outoff = 45
 
-  const totalScore = Object.values(score).reduce((acc, value) => acc + value, 0);
-  console.log(totalScore);
-
-  const lineData = {
-    labels: Object.keys(score),
-    datasets: [
-      {
-        label: 'Carbon Impact',
-        data: Object.values(score),
-        borderColor: '#4bc0c0',
-        backgroundColor: 'rgba(91, 195, 195)',
-        fill: true,
-      },
-    ],
-  };
+  const percentage = (total / outoff) * 100;
 
   return (
     <div>
       <Navbar />
       <div className="app-container">
-        <div className="container-fluid" style={{marginTop:'80px', marginBottom:'20px'}}>
+        <div className="container-fluid" style={{ marginTop: '80px', marginBottom: '20px' }}>
           <Card
             sx={{
               padding: '40px 20px',
@@ -84,32 +73,54 @@ const Score = () => {
                 <h3>sagar shinde</h3>
               </div>
               <hr className="m-3" />
-              <h1 style={{ fontSize: '35px' }}>Carbon Quiz Calculator</h1>
+              <h1 style={{ fontSize: '30px', marginBottom: '8px' }}>Carbon Quiz Calculator</h1>
 
               <div className="row d-flex justify-content-center align-items-center">
-
                 <div className="col-xl-6">
+                  {/* Display Highest Score */}
+                  {highestScore !== null && highestScoreCategory !== null ? (
+                    <div className="progressdata">
+                      <h2 style={{ fontSize: '25px' }}> Your Highest Score Is: {highestScore}</h2>
+                      <h3 className='mt-2' >Category: {highestScoreCategory}</h3>
+                    </div>
+                  ) : ''}
 
-                  <div className="progressdata">
-                    {/* {
-                      finaldata.map((item) => {
-                        <>
-                        <input type="range" value={item} />
-                        </>
-                      })
-                    } */}
-                  </div>
+                  <div className="row  mt-3 p-1 lineardiv">
+                    <div className="col-lg-6 border-1 p-2">
+                      {/* Display Progress for Each Category */}
+                      {Object.keys(finaldata).map((category) => {
+                        const score = finaldata[category];
 
-                  {/* Line Chart */}
-                  <div className="line-chart-container chart" style={{ marginTop: '30px', padding:'10px' }}>
-                    <Bar data={lineData} options={{ responsive: true, plugins: { legend: { position: 'top' } } }} />
+                        // Normalize the score to be between 0 and 100 based on the max score
+                        const progress = (score / maxScore) * 100;
+
+                        return (
+                          <div key={category} className='lineardata mt-3'>
+                            <h4 className='text-start m-2'>{category}: {score}</h4>
+                            <LinearProgress variant="determinate" value={progress} sx={{ height: '10px', borderRadius: '20px' }} />
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div className="col-lg-6 mt-4">
+                      <div style={{maxWidth:'100%', width:'300px', margin:'0px auto'}}>
+                      <CircularProgressbar
+                        value={percentage}
+                        text={`${total} / ${outoff}`}
+                        circleRatio={0.75}
+                        styles={buildStyles({
+                          rotation: 1 / 2 + 1 / 8,
+                          strokeLinecap: "butt",
+                          trailColor: "#eee",
+                          pathColor: "#4caf50",
+                          textColor: "#333",
+                        })}
+                      />
+                      </div>
+                     
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="result-summary" style={{ marginTop: '30px' }}>
-                <h3>Overall Score: {totalScore}/{totalQuestions}</h3>
-                <p>Time Taken: {totalTime} seconds</p>
-                <p>Total Carbon Impact: {totalScore} points</p>
               </div>
             </div>
           </Card>
