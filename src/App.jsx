@@ -10,6 +10,7 @@ import RegisterPage from './Components/Player/RegisterPage.jsx';
 // import Startpage from './Components/Player/Startpage.jsx';
 import Score from './Components/Player/Score.jsx';
 import QuizGame1 from './Components/Player/QuizGame1.jsx';
+import ShowQrcode from './Components/Player/ShowQrcode.jsx';
 
 function App() {
   return (
@@ -21,7 +22,9 @@ function App() {
         <Route path="/" element={<RegisterPage />} />
         <Route path="/play" element={<QuizGame1 />} />
         {/* <Route path="/Startpage" element={<Startpage />} /> */}
+        <Route path="/ShowQrcode" element={<ShowQrcode />} />
         <Route path="/Score" element={<Score />} />
+
       </Routes>
     </HashRouter>
   );

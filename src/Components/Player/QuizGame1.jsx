@@ -5,23 +5,24 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Card, LinearProgress, Button } from '@mui/material';
 import './Register.css'
 import Navbar from './Navbar';
-import bg from '../../assets/_.png'
 import confused from '../../assets/Confused Man.gif'
+import confusedwomen from '../../assets/Confused women.gif'
 import TypewriterComponent from 'typewriter-effect';
 import btnsound from '../../assets/btnclick.wav'
 
-const RadioButton = ({ name, value, id, checked, onChange, label}) => {
-
+const RadioButton = ({ name, value, id, checked, onChange, label, isSelected }) => {
   return (
     <>
-      <div className="radio-option"
+      <div className={`radio-option ${isSelected ? 'selected' : ''}`}
         style={
           {
             display: 'flex',
             flex: '1 2 45%',
             marginBottom: '15px',
           }
-        } onClick={() => onChange({ target: { value } })}>
+        }
+
+      >
         <input
           type="radio"
           name={name}
@@ -31,8 +32,9 @@ const RadioButton = ({ name, value, id, checked, onChange, label}) => {
           checked={checked}
           onChange={onChange}
         />
-        <div className='outerbox'>
-          <div className='options'>
+        <div className='outerbox' onClick={() => onChange({ target: { value } })
+        } >
+          <div className='options' onClick={(e) => e.stopPropagation()}>
             {id === 'option-0' ? 'A' :
               id === 'option-1' ? 'B' :
                 id === 'option-2' ? 'C' :
@@ -44,13 +46,13 @@ const RadioButton = ({ name, value, id, checked, onChange, label}) => {
           >
             {label}
           </p>
+          {isSelected && <span className="check-icon">✔</span>}
         </div>
       </div>
     </>
   );
 };
 
-// here i display 4 option and add the background image to the option but in 4 option add same image i want to use different image to 4 option 
 
 const QuizGame1 = () => {
   const navigate = useNavigate();
@@ -68,23 +70,23 @@ const QuizGame1 = () => {
   const [totalTime, setTotalTime] = useState(0);
   const [answers, setAnswers] = useState({});
 
-
-
   const location = useLocation();
   const username = location.state?.name;
   const uid = location.state?.uid;
+  const gender = location.state?.gender;
 
   // Fetch data from API
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const formData = new FormData();
-        formData.append('GID', localStorage.getItem('gid'));
+        // const formData = new FormData();
+        // formData.append('GID', localStorage.getItem('gid'));
         const response = await fetch('http://192.168.1.25/Vedanta/API/getQnA.php', {
-          method: 'POST',
-          body: formData,
+          method: 'GET',
+          // body: formData,
         });
         if (!response.ok) {
+          setLoading(true);
           throw new Error('Network response was not ok');
         }
         const result = await response.json();
@@ -93,6 +95,7 @@ const QuizGame1 = () => {
         setQuestions(questions);
         setDataFound(true);
       } catch (err) {
+        setLoading(true);
         console.error(err.message);
       } finally {
         setLoading(false);
@@ -100,17 +103,14 @@ const QuizGame1 = () => {
     };
     fetchData();
   }, []);
-
   const handleOptionChange = (selectedValue) => {
     const sound = new Audio(btnsound);
     sound.play();
-
     if (selectedValue === null) {
       console.log("No option selected");
       setCurrentQuestionIndex(currentQuestionIndex + 1);
       return;
     }
-
     const currentQuestion = questions[currentQuestionIndex];
     const selectedOption = currentQuestion.Option.find((option) => option[1] === selectedValue);
     const pointsToAdd = selectedOption ? selectedOption[1] : 0;
@@ -126,14 +126,12 @@ const QuizGame1 = () => {
       const updatedScore = { ...prevScore };
       const type = currentQuestion.Type;
       const previousSelectedValue = answers[currentQuestionIndex];
-
       // Remove the previous points (if any) before adding the new points
       if (previousSelectedValue) {
         const previousSelectedOption = currentQuestion.Option.find((option) => option[1] === previousSelectedValue);
         const previousPoints = previousSelectedOption ? previousSelectedOption[1] : 0;
         updatedScore[type] -= previousPoints;
       }
-
       // Add the new points for the selected option
       if (!updatedScore[type]) {
         updatedScore[type] = 0;
@@ -182,7 +180,12 @@ const QuizGame1 = () => {
 
     // alert(`Quiz submitted! Your score is ${finalScore} out of ${questions.length}. Total time: ${duration} seconds.`);
     // setQuizCompleted(true);
-    navigate('/Score');
+    navigate('/Showqrcode', {
+      state: {
+        url: window.location.href,  
+        uid: uid                   
+      }
+    });
     try {
       setLoading(true);
       const formData = new FormData();
@@ -225,7 +228,6 @@ const QuizGame1 = () => {
 
   const totalQuestion = 15;
   const progress = (currentQuestionIndex / totalQuestion) * 100;
-
   return (
     <div>
       <Navbar />
@@ -240,7 +242,7 @@ const QuizGame1 = () => {
                     <hr />
                     <div className="userinfo d-flex justify-content-around align-items-center">
                       <div className="img-container" style={{ width: '100%' }}>
-                        <img src={confused} alt="Quiz Test" className="w-[180px] md:w-[300px]" />
+                        <img src={gender === 'male' ? confused : confusedwomen} alt="Quiz Test" className="w-[180px] md:w-[300px]" />
                       </div>
                       <div style={{ width: '100%', }}>
                         <h4 style={{ fontSize: '25px', fontWeight: 'bold' }}>
@@ -285,7 +287,7 @@ const QuizGame1 = () => {
                       paddingBottom: '10px',
                       borderRadius: '30px',
                       height: '40px',
-                      backgroundColor:'white',
+                      backgroundColor: 'white',
                     }}
                   />
                   <h2 style={{
@@ -298,13 +300,12 @@ const QuizGame1 = () => {
                 </div>
                 <div className={`question-container`}>
                   <div
-                    className="flex items-center w-full max-w-md justify-between mb-4 mx-auto"
-                  >
+                    className="flex items-center w-full max-w-md justify-between mb-4 mx-auto">
                     <span className="text-center flex-1" style={{ fontSize: '25px' }}>Question {currentQuestionIndex + 1}/{questions.length}</span>
                     {/* <h2 className="text-2xl font-semibold flex items-center mr-4">{timeRemaining < 10 ? `0${timeRemaining}` : timeRemaining}</h2> */}
                   </div>
                   <div className={`form-container`}>
-                    <div className='outerbox' style={{margin:'0px auto'}}>
+                    <div className='outerbox' style={{ margin: '0px auto' }}>
                       <p
                         className="text-2xl font-semibold text-center"
                       >
@@ -313,12 +314,9 @@ const QuizGame1 = () => {
                       </p>
 
                       {/* Optional: Horizontal Line */}
-                    
                     </div>
-
                     <div>
                     </div>
-
                     <div className={`p-6 mt-5 rounded-lg shadow-lg w-full mx-auto border-1 row animate ${animationState}`} style={{ display: 'flex', flexWrap: 'wrap', gap: '20px' }}>
                       <span className='text-center' style={{ fontSize: '30px' }}><strong>Options</strong></span>
                       <hr className='mb-5' />
@@ -332,6 +330,7 @@ const QuizGame1 = () => {
                             checked={selectedOption === option[1]}
                             onChange={() => handleOptionChange(option[1])}
                             label={option[0]}
+                            isSelected={selectedOption === option[1]}
                           />
                         ))
                       ) : (
@@ -343,12 +342,11 @@ const QuizGame1 = () => {
                         variant="contained"
                         color="default"
                         onClick={() => {
-                          // Update the selected option when navigating back
                           const previousAnswer = answers[currentQuestionIndex - 1];
                           setSelectedOption(previousAnswer);
                           setCurrentQuestionIndex(currentQuestionIndex - 1);
                         }}
-                        disabled={currentQuestionIndex === 0} // Disable "Prev" button if on the first question
+                        disabled={currentQuestionIndex === 0}
                         className='w-40'
                         style={{ marginRight: '20px' }}
                       >
@@ -357,11 +355,21 @@ const QuizGame1 = () => {
                       <Button
                         className='w-40'
                         variant="contained"
-                        onClick={() => setCurrentQuestionIndex(currentQuestionIndex + 1)}
+                        onClick={() => {
+                          const currentAnswer = answers[currentQuestionIndex]; // Get the answer for the current question
+                          if (currentAnswer) {
+                            setCurrentQuestionIndex(currentQuestionIndex + 1);
+                            setSelectedOption(answers[currentQuestionIndex + 1]); // Set the selected answer for the next question
+                          } else {
+                            // Handle the case where no answer is selected
+                            console.log("Please select an answer before proceeding.");
+                          }
+                        }}
                         disabled={currentQuestionIndex === questions.length - 1} // Disable "Next" button if on last question
                       >
                         Next
                       </Button>
+
                     </div>
                   </div>
                 </div>

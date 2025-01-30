@@ -1,58 +1,47 @@
 import React, { useEffect, useState } from 'react';
-import { Card, CircularProgress, LinearProgress } from '@mui/material';
+import { Box, Card, LinearProgress, Typography } from '@mui/material';
 import Navbar from './Navbar';
+import thank from '../../assets/thank.gif';
 import './Register.css';
-import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
-import 'react-circular-progressbar/dist/styles.css';
+import { Car, Flame, Apple, TreePine, ShoppingBag, Factory } from "lucide-react"
+import { useLocation } from 'react-router-dom';
 
+// Register necessary chart.js components
 const Score = () => {
-  const [finaldata, setFinalData] = useState({});
-  const [highestScore, setHighestScore] = useState(null);
-  const [highestScoreCategory, setHighestScoreCategory] = useState(null);
-  const [maxScore, setMaxScore] = useState(0);  // To find the max score across all categories
-  const [average, setAverage] = useState();
+  const [uid , setUid] = useState('')
+  const [finaldata, setFinalData] = useState([])
+
+
+  
+  // useEffect(() => {
+  //   const path = new URLSearchParams(window.location.search)
+  //   const uid = path.get('uid')
+  //   setUid(uid);
+  // } , [])
+
 
   useEffect(() => {
     const fetchScoreData = async () => {
       try {
-        const response = await fetch(`http://192.168.1.25/Vedanta/API/getScore.php?UID=${2}`, {
-          method: 'GET',
+        const response = await fetch(`http://192.168.1.25/Vedanta/API/getScore.php?UID=${3}`, {
+          method: 'GET', 
         });
         if (!response.ok) {
           throw new Error('Network response was not ok');
         }
-        const data = await response.json();
-        console.log(data);
-        setFinalData(data.Result); // Assuming data.Result is an object now
-
-        // Assuming data.Result is an object where keys are categories and values are the scores
-        if (data.Result) {
-          let highest = { score: -Infinity, category: null }; // Initialize with a very low score
-
-          // Find the highest score and set max score for scaling
-          for (const category in data.Result) {
-            const score = data.Result[category];
-
-            // Update highest score and category
-            if (score > highest.score) {
-              highest = { score, category };
-            }
-          }
-          setHighestScore(highest.score);
-          setHighestScoreCategory(highest.category); // Set the category that had the highest score
-          setMaxScore(9); // Set the max score for scaling progress bars
-        }
-      } catch (err) {
+        const data = await response.json(); 
+        console.log(data); 
+        setFinalData(data.Result);
+        console.log(finaldata);
+      }
+       catch (err) {
         console.error('Error fetching score:', err.message);
       }
     };
-    fetchScoreData(); // Call the async function to fetch the data
+    fetchScoreData(); 
   }, []);
 
-  const total = 25;
-  const outoff = 45
-
-  const percentage = (total / outoff) * 100;
+  const totalscore = 15;
 
   return (
     <div>
@@ -73,51 +62,97 @@ const Score = () => {
                 <h3>sagar shinde</h3>
               </div>
               <hr className="m-3" />
-              <h1 style={{ fontSize: '30px', marginBottom: '8px' }}>Carbon Quiz Calculator</h1>
-
-              <div className="row d-flex justify-content-center align-items-center">
-                <div className="col-xl-6">
-                  {/* Display Highest Score */}
-                  {highestScore !== null && highestScoreCategory !== null ? (
-                    <div className="progressdata">
-                      <h2 style={{ fontSize: '25px' }}> Your Highest Score Is: {highestScore}</h2>
-                      <h3 className='mt-2' >Category: {highestScoreCategory}</h3>
+              <h1 style={{ fontSize: '35px' }}>Carbon Quiz Calculator</h1>
+              <div className="carbon" style={{marginTop:'70px'}}>
+                <div className="relative w-full max-w-3xl mx-auto p-2">
+                  <div className="aspect-square relative">
+                    {/* Main circular background */}
+                    <div className="absolute inset-0 rounded-full bg-gradient-to-br from-green-100 to-green-200 border-4 border-green-300">
+                      {/* Footprint shape overlay */}
+                      <div className="absolute inset-0 bg-green-500/20 rounded-full clip-path-footprint border-2" />
                     </div>
-                  ) : ''}
 
-                  <div className="row  mt-3 p-1 lineardiv">
-                    <div className="col-lg-6 border-1 p-2">
-                      {/* Display Progress for Each Category */}
-                      {Object.keys(finaldata).map((category) => {
-                        const score = finaldata[category];
+                    {/* Center text */}
+                    {/* <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
+                      <h2 className="text-xl font-bold text-green-800">CARBON</h2>
+                      <h3 className="text-lg font-semibold text-green-700">FOOTPRINT</h3>
+                      <p className="text-sm text-green-600">INFOGRAPHIC</p>
+                    </div> */}
 
-                        // Normalize the score to be between 0 and 100 based on the max score
-                        const progress = (score / maxScore) * 100;
-
-                        return (
-                          <div key={category} className='lineardata mt-3'>
-                            <h4 className='text-start m-2'>{category}: {score}</h4>
-                            <LinearProgress variant="determinate" value={progress} sx={{ height: '10px', borderRadius: '20px' }} />
-                          </div>
-                        );
-                      })}
-                    </div>
-                    <div className="col-lg-6 mt-4">
-                      <div style={{maxWidth:'100%', width:'300px', margin:'0px auto'}}>
-                      <CircularProgressbar
-                        value={percentage}
-                        text={`${total} / ${outoff}`}
-                        circleRatio={0.75}
-                        styles={buildStyles({
-                          rotation: 1 / 2 + 1 / 8,
-                          strokeLinecap: "butt",
-                          trailColor: "#eee",
-                          pathColor: "#4caf50",
-                          textColor: "#333",
-                        })}
-                      />
+                    {/* Data points */}
+                    <div className="absolute inset-0">
+                      {/* Energy */}
+                      <div className="absolute top-[15%] left-[10%] flex flex-col items-center">
+                        <div className="bg-white p-3 rounded-full shadow-lg mb-2">
+                          <Flame className="w-6 h-6 text-orange-500" />
+                        </div>
+                        <div className="text-center absolute top-[-100%] right-[80%]">
+                          <div className="text-2xl font-bold text-green-600">
+                            {
+                            ((finaldata.Energy / totalscore) * 100).toFixed(2)
+                            }
+                            </div>
+                          <div className="text-sm font-medium text-green-700">Energy</div>
+                        </div>
                       </div>
-                     
+
+                      {/* Food */}
+                      <div className="absolute top-[0%] right-[45%] flex flex-col items-center">
+                        <div className="bg-white p-3 rounded-full shadow-lg mb-2">
+                          <TreePine className="w-6 h-6 text-green-500" />
+                        </div>
+                        <div className="text-center absolute top-[-90%] right-[0%]">
+                        <div className="text-2xl font-bold text-white-200">
+                        {
+                            ((finaldata.Food / totalscore) * 100).toFixed(2)
+                            }
+                          </div>
+                          <div className="text-sm font-medium text-green-700">Food</div>
+                        </div>
+                      </div>
+
+                      {/* Life style */}
+                      <div className="absolute top-[10%] right-[9%] flex flex-col items-center">
+                        <div className="bg-white p-3 rounded-full shadow-lg mb-2">
+                          <Apple className="w-6 h-6 text-red-500" />
+                        </div>
+                        <div className="text-center absolute top-[-100%] right-[-40%]">
+                          <div className="text-2xl font-bold text-green-600">
+                          {
+                            ((finaldata.Lifestyle / totalscore) * 100).toFixed(2)
+                            }                            </div>
+                          <div className="text-sm font-medium text-green-700">Lifestyle</div>
+                        </div>
+                      </div>
+
+                      {/* Transport */}
+                      <div className="absolute bottom-[10%] right-[6%] flex flex-col items-center">
+                        <div className="bg-white p-3 rounded-full shadow-lg mb-2">
+                          <Car className="w-6 h-6 text-yellow-500" />
+                        </div>
+                        <div className="text-center absolute bottom-[-80%] right-[-40%]">
+                          <div className="text-2xl font-bold text-green-600">
+                          {
+                            ((finaldata.Transport / totalscore) * 100).toFixed(2)
+                            }
+                            </div>
+                          <div className="text-sm font-medium text-green-700">Transport</div>
+                        </div>
+                      </div>
+                      {/* Waste */}
+                      <div className="absolute bottom-[5%] left-[20%] -translate-x-1/2 flex flex-col items-center">
+                        <div className="bg-white p-3 rounded-full shadow-lg mb-2">
+                          <ShoppingBag className="w-6 h-6 text-blue-500" />
+                        </div>
+                        <div className="text-center absolute bottom-[-70%] right-[60%]">
+                        <div className="text-2xl font-bold text-green-600">
+                        {
+                            ((finaldata.Waste / totalscore) * 100).toFixed(2)
+                            }
+                          </div>
+                          <div className="text-sm font-medium text-green-700">Waste</div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>

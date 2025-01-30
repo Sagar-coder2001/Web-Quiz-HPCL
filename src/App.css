@@ -4,12 +4,9 @@ body {
     padding: 0;
     box-sizing: border-box;
     width: 100%;
-    background-image: linear-gradient(to right, rgba( 0, 82, 152, 0.5),rgba(113, 179, 47, 0.5)),url('../src/assets/Background.gif');
+    background-image: linear-gradient(to right, rgba(0, 99, 168, 0.7),rgba(123, 191, 67, 0.7));
     background-repeat: no-repeat;
     object-fit: cover;
     background-position: center;
     background-size: cover;
 }
-body::-webkit-scrollbar {
-    display: none; /* Hide scrollbar */
-  }
